@@ -2,7 +2,7 @@ pub mod filter;
 pub mod region_code;
 
 pub use crate::filter::Filter;
-pub use crate::region_code::RegionCode;
+pub use crate::region_code::Region;
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::io::{Cursor, Error, ErrorKind, Result};
@@ -76,7 +76,7 @@ impl MSQClient {
         Ok(self.recv().await?)
     }
 
-    pub async fn query(&mut self, region: RegionCode, filter: Filter) -> Result<Vec<String>> {
+    pub async fn query(&mut self, region: Region, filter: Filter) -> Result<Vec<String>> {
         Ok(self.query_raw(region.as_u8(), filter.as_str()).await?)
     }
 

@@ -1,4 +1,4 @@
-pub enum RegionCode {
+pub enum Region {
     USEast,
     USWest,
     SouthAmerica,
@@ -10,7 +10,7 @@ pub enum RegionCode {
     All, // Rest of the world
 }
 
-impl RegionCode {
+impl Region {
     pub fn as_u8(&self) -> u8 {
         match self {
             Self::USEast => 0x00,
