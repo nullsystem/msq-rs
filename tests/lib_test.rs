@@ -4,7 +4,7 @@ async fn test_lib() -> std::io::Result<()> {
     let mut client = msq::MSQClient::new().await?;
     client.connect("hl2master.steampowered.com:27011").await?;
     let servers = client
-        .query(msq::RegionCode::All,
+        .query(msq::Region::All,
             msq::Filter::new()
                 .appid(244630)
         )
