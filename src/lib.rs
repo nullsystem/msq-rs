@@ -58,12 +58,13 @@ impl WritePacketExt for Cursor<Vec<u8>> {
 
 pub struct MSQClient {
     sock: UdpSocket,
+    max_servers: usize,
 }
 
 impl MSQClient {
     pub async fn new() -> Result<MSQClient> {
         let sock = UdpSocket::bind("0.0.0.0:0").await?;
-        Ok(MSQClient { sock })
+        Ok(MSQClient { sock: sock, max_servers: 64 })
     }
 
     pub async fn connect(&mut self, master_server_addr: &str) -> Result<()> {
@@ -73,7 +74,7 @@ impl MSQClient {
 
     pub async fn query_raw(&mut self, region_code: u8, filter_str: &str) -> Result<Vec<String>> {
         self.send(region_code, filter_str, "0.0.0.0:0").await?; // First Packet
-        Ok(self.recv().await?)
+        Ok(self.recv(region_code, filter_str).await?)
     }
 
     pub async fn query(&mut self, region: Region, filter: Filter) -> Result<Vec<String>> {
@@ -90,33 +91,46 @@ impl MSQClient {
         Ok(())
     }
 
-    async fn recv(&mut self) -> Result<Vec<String>> {
+    async fn recv(&mut self, region_code: u8, filter_str: &str) -> Result<Vec<String>> {
         let mut buf: [u8; 512] = [0x00; 512];
-        let len = self.sock.recv(&mut buf).await?;
-        let mut cursor = Cursor::new(buf[..len].to_vec());
         let mut servers: Vec<String> = vec![];
-        if cursor.read_u8_veccheck(&vec![0xFF, 0xFF, 0xFF, 0xFF, 0x66, 0x0A])? {
-            let end = cursor.get_ref().len() as u64;
-            while cursor.position() < end {
-                let mut addr: [u8; 4] = [0; 4];
-                addr[0] = cursor.read_u8()?;
-                addr[1] = cursor.read_u8()?;
-                addr[2] = cursor.read_u8()?;
-                addr[3] = cursor.read_u8()?;
-                let port = cursor.read_u16::<BigEndian>()?;
-                let addr_str = format!("{}.{}.{}.{}:{}", addr[0], addr[1], addr[2], addr[3], port);
+        let mut end_of_list = false;
+        while !end_of_list {
+            let len = self.sock.recv(&mut buf).await?;
+            let mut cursor = Cursor::new(buf[..len].to_vec());
 
-                // If end of IP list
-                if addr_str == "0.0.0.0:0" {
-                    break;
+            if cursor.read_u8_veccheck(&vec![0xFF, 0xFF, 0xFF, 0xFF, 0x66, 0x0A])? {
+                let end = cursor.get_ref().len() as u64;
+                while cursor.position() < end {
+                    let mut addr: [u8; 4] = [0; 4];
+                    addr[0] = cursor.read_u8()?;
+                    addr[1] = cursor.read_u8()?;
+                    addr[2] = cursor.read_u8()?;
+                    addr[3] = cursor.read_u8()?;
+                    let port = cursor.read_u16::<BigEndian>()?;
+                    let addr_str = format!("{}.{}.{}.{}:{}", addr[0], addr[1], addr[2], addr[3], port);
+
+                    // If end of IP list
+                    if servers.len() >= self.max_servers || addr_str == "0.0.0.0:0" {
+                        end_of_list = true;
+                        break;
+                    }
+
+                    servers.push(addr_str);
                 }
-
-                servers.push(addr_str);
+            } else {
+                return Err(Error::new(ErrorKind::Other, "Mismatched starting sequence"));
             }
-        } else {
-            return Err(Error::new(ErrorKind::Other, "Mismatched starting sequence"));
+
+            if !end_of_list && servers.len() > 0 {
+                self.send(region_code, filter_str, &servers.last().unwrap()).await?;
+            }
         }
 
         Ok(servers)
+    }
+
+    pub fn max_servers_on_query(&mut self, max_servers: usize) {
+        self.max_servers = max_servers;
     }
 }
