@@ -19,7 +19,8 @@ async fn test_lib_nt() -> std::io::Result<()> {
 async fn test_lib_css() -> std::io::Result<()> {
     let mut client = msq::MSQClient::new().await?;
     client.connect("hl2master.steampowered.com:27011").await?;
-    client.max_servers_on_query(64);
+    client.max_servers_on_query(128);
+
     let servers = client
         .query(msq::Region::All, msq::Filter::new().appid(240))
         .await?;
@@ -28,5 +29,6 @@ async fn test_lib_css() -> std::io::Result<()> {
     for server in servers {
         println!("{}", server);
     }
+
     Ok(())
 }

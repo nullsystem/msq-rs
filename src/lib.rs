@@ -64,7 +64,10 @@ pub struct MSQClient {
 impl MSQClient {
     pub async fn new() -> Result<MSQClient> {
         let sock = UdpSocket::bind("0.0.0.0:0").await?;
-        Ok(MSQClient { sock: sock, max_servers: 64 })
+        Ok(MSQClient {
+            sock: sock,
+            max_servers: 64,
+        })
     }
 
     pub async fn connect(&mut self, master_server_addr: &str) -> Result<()> {
@@ -92,7 +95,7 @@ impl MSQClient {
     }
 
     async fn recv(&mut self, region_code: u8, filter_str: &str) -> Result<Vec<String>> {
-        let mut buf: [u8; 512] = [0x00; 512];
+        let mut buf: [u8; 2048] = [0x00; 2048];
         let mut servers: Vec<String> = vec![];
         let mut end_of_list = false;
         while !end_of_list {
@@ -108,7 +111,8 @@ impl MSQClient {
                     addr[2] = cursor.read_u8()?;
                     addr[3] = cursor.read_u8()?;
                     let port = cursor.read_u16::<BigEndian>()?;
-                    let addr_str = format!("{}.{}.{}.{}:{}", addr[0], addr[1], addr[2], addr[3], port);
+                    let addr_str =
+                        format!("{}.{}.{}.{}:{}", addr[0], addr[1], addr[2], addr[3], port);
 
                     // If end of IP list
                     if servers.len() >= self.max_servers || addr_str == "0.0.0.0:0" {
@@ -123,7 +127,8 @@ impl MSQClient {
             }
 
             if !end_of_list && servers.len() > 0 {
-                self.send(region_code, filter_str, &servers.last().unwrap()).await?;
+                self.send(region_code, filter_str, &servers.last().unwrap())
+                    .await?;
             }
         }
 
