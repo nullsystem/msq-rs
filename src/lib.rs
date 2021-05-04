@@ -1,6 +1,12 @@
+pub mod filter;
+pub mod region_code;
+
+pub use crate::filter::Filter;
+pub use crate::region_code::RegionCode;
+
+use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+use std::io::{Cursor, Error, ErrorKind, Result};
 use tokio::net::UdpSocket;
-use std::io::{Cursor, Result, Error, ErrorKind};
-use byteorder::{ReadBytesExt, WriteBytesExt, BigEndian};
 
 trait ReadPacketExt {
     fn read_cstring(&mut self) -> Result<String>;
@@ -34,18 +40,18 @@ impl ReadPacketExt for Cursor<Vec<u8>> {
     }
 }
 
-trait WriteCString {
+trait WritePacketExt {
     fn write_cstring(&mut self, src: &str) -> Result<()>;
 }
 
-impl WriteCString for Cursor<Vec<u8>> {
+impl WritePacketExt for Cursor<Vec<u8>> {
     fn write_cstring(&mut self, src: &str) -> Result<()> {
         for ch in src.chars() {
             let mut chu8 = [0; 1];
             ch.encode_utf8(&mut chu8);
             self.write_u8(chu8[0])?;
         }
-        self.write_u8(0x00)?;   // 0x00 Terminated
+        self.write_u8(0x00)?; // 0x00 Terminated
         Ok(())
     }
 }
@@ -57,9 +63,7 @@ pub struct MSQClient {
 impl MSQClient {
     pub async fn new() -> Result<MSQClient> {
         let sock = UdpSocket::bind("0.0.0.0:0").await?;
-        Ok(MSQClient{
-            sock
-        })
+        Ok(MSQClient { sock })
     }
 
     pub async fn connect(&mut self, master_server_addr: &str) -> Result<()> {
@@ -67,13 +71,16 @@ impl MSQClient {
         Ok(())
     }
 
-    pub async fn query(&mut self, filter_str: &str) -> Result<Vec<String>> {
-        self.send(filter_str, 0xFF, "0.0.0.0:0").await?;    // First Packet
-        let servers = self.recv().await?;
-        Ok(servers)
+    pub async fn query_raw(&mut self, region_code: u8, filter_str: &str) -> Result<Vec<String>> {
+        self.send(region_code, filter_str, "0.0.0.0:0").await?; // First Packet
+        Ok(self.recv().await?)
     }
 
-    async fn send(&mut self, filter_str: &str, region_code: u8, address: &str) -> Result<()> {
+    pub async fn query(&mut self, region: RegionCode, filter: Filter) -> Result<Vec<String>> {
+        Ok(self.query_raw(region.as_u8(), filter.as_str()).await?)
+    }
+
+    async fn send(&mut self, region_code: u8, filter_str: &str, address: &str) -> Result<()> {
         let mut cursor: Cursor<Vec<u8>> = Cursor::new(vec![]);
         cursor.write_u8(0x31)?;
         cursor.write_u8(region_code)?;
@@ -113,4 +120,3 @@ impl MSQClient {
         Ok(servers)
     }
 }
-
