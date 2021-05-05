@@ -92,7 +92,7 @@ impl Filter {
     /// Filters if the servers running dedicated
     ///
     /// # Arguments
-    /// * `is_dedicated` - A bool 
+    /// * `is_dedicated` - A bool
     pub fn dedicated(self, is_dedicated: bool) -> Filter {
         self.boolean("dedicated", is_dedicated)
     }

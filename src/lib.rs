@@ -1,8 +1,8 @@
 pub mod filter;
-pub mod region_code;
+pub mod region;
 
 pub use crate::filter::Filter;
-pub use crate::region_code::Region;
+pub use crate::region::Region;
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::io::{Cursor, Error, ErrorKind, Result};
