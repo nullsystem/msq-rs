@@ -10,18 +10,100 @@
 //!     .map("de_dust2");
 //! ```
 //!
+#[derive(Clone)]
+enum FilterPropVal {
+    Special(Vec<FilterProp>),
+    Boolean(bool),
+    Str(String),
+    Uint32(u32),
+    Tags(Vec<String>),
+}
+
+impl FilterPropVal {
+    fn from_special(spec: &Vec<FilterProp>) -> FilterPropVal {
+        Self::Special(spec.clone())
+    }
+
+    fn from_tags(tags: &Vec<&str>) -> FilterPropVal {
+        let mut fpvtags: Vec<String> = vec![];
+
+        for tag in tags {
+            fpvtags.push(String::from(*tag));
+        }
+
+        Self::Tags(fpvtags)
+    }
+
+    fn as_str(&self) -> String {
+        match &*self {
+            Self::Special(filterprops) => {
+                let mut sstr = String::from("");
+
+                // Start with values count
+                sstr += &format!("{}", filterprops.len());
+
+                // Populate the string with inner values
+                for fp in filterprops {
+                    sstr += &fp.as_str();
+                }
+
+                sstr
+            }
+            Self::Boolean(b) => format!("{}", *b as i32),
+            Self::Str(s) => String::from(s),
+            Self::Uint32(i) => format!("{}", i),
+            Self::Tags(tags) => {
+                let mut tags_str = String::from("");
+                for tag in tags {
+                    tags_str += &tag;
+                    tags_str += ",";
+                }
+                tags_str.pop();
+                tags_str
+            }
+        }
+    }
+}
+
+#[derive(Clone)]
+struct FilterProp {
+    pub name: String,
+    pub value: FilterPropVal,
+}
+
+impl FilterProp {
+    fn new(name: &str, value: FilterPropVal) -> FilterProp {
+        FilterProp {
+            name: String::from(name),
+            value: value,
+        }
+    }
+
+    fn as_str(&self) -> String {
+        format!("\\{}\\{}", self.name, self.value.as_str())
+    }
+}
 
 /// Filter builder
 ///
 /// Reference: https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol#Filter
 pub struct Filter {
-    filter_str: String,
+    filter_lst: Vec<FilterProp>,
+    in_special: bool,
+    spec_vec: Vec<FilterProp>,
+    special_name: String,
 }
 
 impl Filter {
     /// Returns a string representing the filters
-    pub fn as_str(&self) -> &str {
-        return &self.filter_str;
+    pub fn as_str(&self) -> String {
+        let mut sstr = String::from("");
+
+        for fp in &self.filter_lst {
+            sstr += &fp.as_str();
+        }
+
+        sstr
     }
 
     /// Returns a new Filter struct, used for string builder
@@ -37,56 +119,70 @@ impl Filter {
     /// ```
     pub fn new() -> Filter {
         Filter {
-            filter_str: String::from(""),
+            filter_lst: vec![],
+            in_special: false,
+            spec_vec: vec![],
+            special_name: String::from(""),
         }
     }
 
-    // Append the name
-    fn apn_name(&mut self, name: &str) {
-        self.filter_str.push_str(&format!("\\{}\\", name));
+    fn push(mut self, name: &str, value: FilterPropVal) -> Filter {
+        if self.in_special {
+            self.spec_vec.push(FilterProp::new(name, value));
+        } else {
+            self.filter_lst.push(FilterProp::new(name, value));
+        }
+        self
     }
 
     // Generic filter: Boolean
-    fn boolean(mut self, name: &str, switch: bool) -> Filter {
-        self.apn_name(name);
-        self.filter_str.push_str(&format!("{}", switch as i32));
-        self
+    fn boolean(self, name: &str, switch: bool) -> Filter {
+        self.push(name, FilterPropVal::Boolean(switch))
     }
 
     // Generic filter: String
-    fn string(mut self, name: &str, param: &str) -> Filter {
-        self.apn_name(name);
-        self.filter_str.push_str(param);
-        self
+    fn string(self, name: &str, param: &str) -> Filter {
+        self.push(name, FilterPropVal::Str(String::from(param)))
     }
 
     // Generic filter: Unsigned integer of 32 bits
-    fn uint32(mut self, name: &str, num: u32) -> Filter {
-        self.apn_name(name);
-        self.filter_str.push_str(&format!("{}", num));
-        self
+    fn uint32(self, name: &str, num: u32) -> Filter {
+        self.push(name, FilterPropVal::Uint32(num))
     }
 
     // Generic filter: Vector of strings
-    fn vecstr(mut self, name: &str, tags: &Vec<&str>) -> Filter {
+    fn vecstr(self, name: &str, tags: &Vec<&str>) -> Filter {
         if tags.len() > 0 {
-            self.apn_name(name);
-            for tag in tags {
-                self.filter_str.push_str(&format!("{},", tag));
-            }
-            self.filter_str.pop();
+            self.push(name, FilterPropVal::from_tags(tags))
+        } else {
+            self
         }
+    }
+
+    // Generic filter: Special (start)
+    fn special_start(mut self, name: &str) -> Filter {
+        self.spec_vec.clear();
+        self.in_special = true;
+        self.special_name = String::from(name);
         self
     }
 
     /// A special filter, specifies that servers matching any of the following [x] conditions should not be returned
-    pub fn nor(self, conditions: u32) -> Filter {
-        self.uint32("nor", conditions)
+    pub fn nor(self) -> Filter {
+        self.special_start("nor")
     }
 
     /// A special filter, specifies that servers matching all of the following [x] conditions should not be returned
-    pub fn nand(self, conditions: u32) -> Filter {
-        self.uint32("nand", conditions)
+    pub fn nand(self) -> Filter {
+        self.special_start("nand")
+    }
+
+    /// End the special filter
+    pub fn end(mut self) -> Filter {
+        self.filter_lst.push(FilterProp::new(&self.special_name, FilterPropVal::from_special(&self.spec_vec)));
+        self.in_special = false;
+        self.special_name = String::from("");
+        self
     }
 
     /// Filters if the servers running dedicated
@@ -97,53 +193,53 @@ impl Filter {
         self.boolean("dedicated", is_dedicated)
     }
 
-    // Servers using anti-cheat technology (VAC, but potentially others as well)
+    /// Servers using anti-cheat technology (VAC, but potentially others as well)
     pub fn secure(self, hasac: bool) -> Filter {
         self.boolean("secure", hasac)
     }
 
-    // Servers running the specified modification (ex: cstrike)
+    /// Servers running the specified modification (ex: cstrike)
     pub fn gamedir(self, modg: &str) -> Filter {
         self.string("gamedir", modg)
     }
 
-    // Servers running the specified map (ex: cs_italy)
+    /// Servers running the specified map (ex: cs_italy)
     pub fn map(self, mapn: &str) -> Filter {
         self.string("map", mapn)
     }
 
-    // Servers running on a Linux platform
+    /// Servers running on a Linux platform
     pub fn linux(self, runslinux: bool) -> Filter {
         self.boolean("linux", runslinux)
     }
 
-    // Servers that are not password protected
+    /// Servers that are not password protected
     pub fn password(self, protected: bool) -> Filter {
         self.boolean("password", protected)
     }
 
-    // Servers that are full
+    /// Servers that are full
     pub fn full(self, is_full: bool) -> Filter {
         self.boolean("full", !is_full)
     }
 
-    // Servers that are spectator proxies
+    /// Servers that are spectator proxies
     pub fn proxy(self, specprox: bool) -> Filter {
         self.boolean("proxy", specprox)
     }
 
-    // Servers that are running game [appid]
+    /// Servers that are running game [appid]
     pub fn appid(self, appid: u32) -> Filter {
         self.uint32("appid", appid)
     }
 
-    // Servers that are NOT running game [appid]
+    /// Servers that are NOT running game [appid]
     pub fn napp(self, appid: u32) -> Filter {
         self.uint32("napp", appid)
     }
 
-    // Servers that are empty: is_empty = true
-    // Servers that are not empty: is_empty = false
+    /// Servers that are empty: is_empty = true
+    /// Servers that are not empty: is_empty = false
     pub fn empty(self, is_empty: bool) -> Filter {
         if is_empty {
             self.boolean("noplayers", true)
@@ -152,7 +248,7 @@ impl Filter {
         }
     }
 
-    // Servers that are whitelisted
+    /// Servers that are whitelisted
     pub fn whitelisted(self, white: bool) -> Filter {
         self.boolean("white", white)
     }
