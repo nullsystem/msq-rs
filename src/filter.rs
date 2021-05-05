@@ -167,12 +167,12 @@ impl Filter {
         self
     }
 
-    /// A special filter, specifies that servers matching any of the following [x] conditions should not be returned
+    /// A special filter, specifies that servers matching any of the following \[x\] conditions should not be returned
     pub fn nor(self) -> Filter {
         self.special_start("nor")
     }
 
-    /// A special filter, specifies that servers matching all of the following [x] conditions should not be returned
+    /// A special filter, specifies that servers matching all of the following \[x\] conditions should not be returned
     pub fn nand(self) -> Filter {
         self.special_start("nand")
     }
@@ -228,12 +228,12 @@ impl Filter {
         self.boolean("proxy", specprox)
     }
 
-    /// Servers that are running game [appid]
+    /// Servers that are running game \[appid\]
     pub fn appid(self, appid: u32) -> Filter {
         self.uint32("appid", appid)
     }
 
-    /// Servers that are NOT running game [appid]
+    /// Servers that are NOT running game \[appid\]
     pub fn napp(self, appid: u32) -> Filter {
         self.uint32("napp", appid)
     }
@@ -283,12 +283,12 @@ impl Filter {
         self.vecstr("gamedataor", tags)
     }
 
-    /// Servers with their hostname matching [hostname] (can use * as a wildcard)
+    /// Servers with their hostname matching \[hostname\] (can use * as a wildcard)
     pub fn name_match(self, hostname: &str) -> Filter {
         self.string("name_match", hostname)
     }
 
-    /// Servers running version [version] (can use * as a wildcard)
+    /// Servers running version \[version\] (can use * as a wildcard)
     pub fn version_match(self, ver: &str) -> Filter {
         self.string("version_match", ver)
     }
