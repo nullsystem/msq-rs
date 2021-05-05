@@ -1,10 +1,18 @@
+use std::io::Result;
+use msq::{MSQClient, Region, Filter};
+
 #[tokio::main]
 #[test]
-async fn test_lib_nt() -> std::io::Result<()> {
-    let mut client = msq::MSQClient::new().await?;
+async fn test_lib_nt() -> Result<()> {
+    let mut client = MSQClient::new().await?;
     client.connect("hl2master.steampowered.com:27011").await?;
+    let filter = Filter::new()
+        .appid(244630)
+        .gameaddr("216.52.143.114");
+    println!("{}", filter.as_str());
+
     let servers = client
-        .query(msq::Region::All, msq::Filter::new().appid(244630))
+        .query(Region::All, filter)
         .await?;
 
     println!("Servers: {}", servers.len());
@@ -16,19 +24,27 @@ async fn test_lib_nt() -> std::io::Result<()> {
 
 #[tokio::main]
 #[test]
-async fn test_lib_css() -> std::io::Result<()> {
-    let mut client = msq::MSQClient::new().await?;
+async fn test_lib_css() -> Result<()> {
+    let mut client = MSQClient::new().await?;
     client.connect("hl2master.steampowered.com:27011").await?;
-    client.max_servers_on_query(128);
+    client.max_servers_on_query(256);
+
+    let filter = Filter::new().appid(240)
+        .gametype(&vec!["friendlyfire", "alltalk"])
+        .nand(1)
+            .map("de_dust2");
+    println!("{}", filter.as_str());
 
     let servers = client
-        .query(msq::Region::All, msq::Filter::new().appid(240))
+        .query(Region::Europe, filter)
         .await?;
 
-    println!("Servers: {}", servers.len());
+    let len = servers.len();
+    /*
     for server in servers {
         println!("{}", server);
     }
-
+    */
+    println!("Servers: {}", len);
     Ok(())
 }
