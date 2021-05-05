@@ -28,8 +28,9 @@ async fn test_lib_css() -> Result<()> {
     let filter = Filter::new()
         .appid(240)
         .gametype(&vec!["friendlyfire", "alltalk"])
-        .nand(1)
-        .map("de_dust2");
+        .nand()
+            .map("de_dust2")
+        .end();
     println!("{}", filter.as_str());
 
     let servers = client.query(Region::Europe, filter).await?;

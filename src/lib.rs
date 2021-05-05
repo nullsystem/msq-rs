@@ -81,7 +81,7 @@ impl MSQClient {
     }
 
     pub async fn query(&mut self, region: Region, filter: Filter) -> Result<Vec<String>> {
-        Ok(self.query_raw(region.as_u8(), filter.as_str()).await?)
+        Ok(self.query_raw(region.as_u8(), &filter.as_str()).await?)
     }
 
     async fn send(&mut self, region_code: u8, filter_str: &str, address: &str) -> Result<()> {

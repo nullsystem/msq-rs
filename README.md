@@ -28,15 +28,15 @@ client.connect("hl2master.steampowered.com:27011").await?;
 client.max_servers_on_query(256);
 
 // Do a query, which is restricted to the Europe region
-// and filter by appid 240 (CS:S), gametype has to have
-// friendlyfire and alltalk tags on it, and its current map
-// that is not de_dust2
+// and filter by appid 240 (CS:S), maps that are not
+// de_dust2, and gametype tags of friendlyfire and alltalk
 let servers = client
     .query(Region::Europe,
         Filter::new().appid(240)
-            .gametype(&vec!["friendlyfire", "alltalk"])
-            .nand(1)
+            .nand()
                 .map("de_dust2"))
+            .end()
+            .gametype(&vec!["friendlyfire", "alltalk"])
     .await?;
 ```
 
