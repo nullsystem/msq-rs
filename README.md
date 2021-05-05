@@ -40,3 +40,7 @@ let servers = client
     .await?;
 ```
 
+## Misc
+The following library goes well with this one:
+* Source A2S Queries: [a2s-rs](https://github.com/rumblefrog/a2s-rs) 
+
