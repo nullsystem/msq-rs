@@ -2,10 +2,14 @@
 name = "msq"
 version = "0.1.0"
 license = "MIT"
-authors = ["mtcw99 <15316579+mtcw99@users.noreply.github.com>"]
+authors = ["mtcw"]
 edition = "2018"
+readme = "README.md"
 repository = "https://github.com/mtcw99/msq-rs"
+documentation = "https://docs.rs/msq"
 description = "Rust library implementation of the legacy Master Server Query Protocol"
+keywords = ["steam", "query"]
+categories = ["asynchronous", "network-programming"]
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }

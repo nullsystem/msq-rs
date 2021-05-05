@@ -1,3 +1,4 @@
+/// Region enum to restrict the servers region the query searches for
 pub enum Region {
     USEast,
     USWest,
@@ -11,6 +12,7 @@ pub enum Region {
 }
 
 impl Region {
+    /// Return raw u8 byte code of its specified region
     pub fn as_u8(&self) -> u8 {
         match self {
             Self::USEast => 0x00,
