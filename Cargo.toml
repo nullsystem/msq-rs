@@ -5,6 +5,7 @@ license = "MIT"
 authors = ["mtcw99 <15316579+mtcw99@users.noreply.github.com>"]
 edition = "2018"
 repository = "https://github.com/mtcw99/msq-rs"
+description = "Rust library implementation of the legacy Master Server Query Protocol"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
