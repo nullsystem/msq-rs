@@ -9,24 +9,31 @@
 //! async fn main() -> Result<()> {
 //!     // Startup the client
 //!     let mut client = MSQClient::new().await?;
-//! 
+//!
 //!     // Connect to the master server
 //!     client.connect("hl2master.steampowered.com:27011").await?;
-//! 
+//!
 //!     // Maximum amount of servers we wanted to query
 //!     client.max_servers_on_query(256);
-//! 
-//!     // Do a query, which is restricted to the Europe region
-//!     // and filter by appid 240 (CS:S), maps that are not
-//!     // de_dust2, and gametype tags of friendlyfire and alltalk
-//!     let servers = client
-//!         .query(Region::Europe,
-//!             Filter::new().appid(240)
-//!                 .nand()
-//!                     .map("de_dust2")
-//!                 .end()
-//!                 .gametype(&vec!["friendlyfire", "alltalk"]))
-//!         .await?;
+//!
+//!    let servers = client
+//!        .query(Region::Europe,  // Restrict query to Europe region
+//!            Filter::new()       // Create a Filter builder
+//!                .appid(240)     // appid of 240 (CS:S)
+//!                .nand()         // Start of NAND special filter
+//!                    .map("de_dust2")     // Map is de_dust2
+//!                    .empty(true)         // Server is empty
+//!                .end()          // End of NAND special filter
+//!                .gametype(&vec!["friendlyfire", "alltalk"]))
+//!                // Gametype tags of 'friendlyfire' and 'alltalk'
+//!
+//!                // nand filter excludes servers that has de_dust2 as
+//!                // its map and is empty
+//!        .await?;
+//!
+//!    // nand and nor are both special filters, both closed by
+//!    // using the end method
+//!
 //!     Ok(())
 //! }
 //! ```
@@ -107,7 +114,7 @@ impl MSQClient {
     }
 
     /// Connect the client to the given master server address/hostname
-    /// 
+    ///
     /// # Arguments
     /// * `master_server_addr` - The master server's hostname/ip address
     ///
@@ -144,7 +151,7 @@ impl MSQClient {
     /// * `region` - [Region] enum (`Region::USEast` - `Region::Africa` / `Region::All`)
     /// * `filter` - [Filter] builder (EX: `Filter::new().appid(240).map("de_dust2")`)
     pub async fn query(&mut self, region: Region, filter: Filter) -> Result<Vec<String>> {
-        Ok(self.query_raw(region.as_u8(), &filter.as_str()).await?)
+        Ok(self.query_raw(region.as_u8(), &filter.as_string()).await?)
     }
 
     async fn send(&mut self, region_code: u8, filter_str: &str, address: &str) -> Result<()> {
@@ -169,10 +176,9 @@ impl MSQClient {
                 let end = cursor.get_ref().len() as u64;
                 while cursor.position() < end {
                     let mut addr: [u8; 4] = [0; 4];
-                    addr[0] = cursor.read_u8()?;
-                    addr[1] = cursor.read_u8()?;
-                    addr[2] = cursor.read_u8()?;
-                    addr[3] = cursor.read_u8()?;
+                    for i in 0..=3 {
+                        addr[i] = cursor.read_u8()?;
+                    }
                     let port = cursor.read_u16::<BigEndian>()?;
                     let addr_str =
                         format!("{}.{}.{}.{}:{}", addr[0], addr[1], addr[2], addr[3], port);

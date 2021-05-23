@@ -10,7 +10,7 @@ Rust library implementation of the legacy [Master Server Query Protocol](https:/
 Add this to your `Cargo.toml`:
 ```
 [dependencies]
-msq = "0.1"
+msq = "0.1.1"
 ```
 To get started using msq, see the Quick Start section below
 and take a look at the [documentation](https://docs.rs/msq/).
@@ -31,17 +31,24 @@ async fn main() -> Result<()> {
     // Maximum amount of servers we wanted to query
     client.max_servers_on_query(256);
 
-    // Do a query, which is restricted to the Europe region
-    // and filter by appid 240 (CS:S), maps that are not
-    // de_dust2, and gametype tags of friendlyfire and alltalk
     let servers = client
-        .query(Region::Europe,
-            Filter::new().appid(240)
-                .nand()
-                    .map("de_dust2")
-                .end()
+        .query(Region::Europe,  // Restrict query to Europe region
+            Filter::new()       // Create a Filter builder
+                .appid(240)     // appid of 240 (CS:S)
+                .nand()         // Start of NAND special filter
+                    .map("de_dust2")     // Map is de_dust2
+                    .empty(true)         // Server is empty
+                .end()          // End of NAND special filter
                 .gametype(&vec!["friendlyfire", "alltalk"]))
+                // Gametype tags of 'friendlyfire' and 'alltalk'
+
+                // nand filter excludes servers that has de_dust2 as
+                // its map and is empty
         .await?;
+
+    // nand and nor are both special filters, both closed by
+    // using the end method
+
     Ok(())
 }
 ```

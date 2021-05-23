@@ -12,4 +12,3 @@ fn test_region_codes() {
     assert_eq!(Region::Africa.as_u8(), 0x07);
     assert_eq!(Region::All.as_u8(), 0xFF);
 }
-

@@ -1,4 +1,11 @@
-//! Filter builder
+//! Filter builder - Construct your filter to filter out server results
+//!
+//! NOTE: Some filters may or may not work as expected depending on
+//! appid/games you try it on. The filter builder methods and string
+//! construction generally follows close to the reference listed out
+//! in the Valve developer wiki.
+//!
+//! Reference: <https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol#Filter>
 //!
 //! # Quick Start
 //!
@@ -86,7 +93,7 @@ impl FilterProp {
 
 /// Filter builder
 ///
-/// Reference: https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol#Filter
+/// Reference: <https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol#Filter>
 pub struct Filter {
     filter_lst: Vec<FilterProp>,
     in_special: bool,
@@ -96,7 +103,13 @@ pub struct Filter {
 
 impl Filter {
     /// Returns a string representing the filters
+    #[deprecated(since = "0.1.2", note = "Replaced with as_string (name change)")]
     pub fn as_str(&self) -> String {
+        self.as_string()
+    }
+
+    /// Returns a string representing the filters
+    pub fn as_string(&self) -> String {
         let mut sstr = String::from("");
 
         for fp in &self.filter_lst {
@@ -168,18 +181,49 @@ impl Filter {
     }
 
     /// A special filter, specifies that servers matching any of the following \[x\] conditions should not be returned
+    /// See [pub fn end] method to see examples on usage
     pub fn nor(self) -> Filter {
         self.special_start("nor")
     }
 
     /// A special filter, specifies that servers matching all of the following \[x\] conditions should not be returned
+    /// See [pub fn end] method to see examples on usage
     pub fn nand(self) -> Filter {
         self.special_start("nand")
     }
 
-    /// End the special filter
+    /// End the special filter (nor, nand)
+    /// You must use this method after each nor/nand special filter method being used
+    ///
+    /// # Examples
+    /// Using the NAND filter:
+    /// ```
+    /// use msq::Filter;
+    /// let filter = Filter::new()
+    ///     .appid(240)
+    ///     .nand()     // Exclude servers that has de_dust2 AND is empty
+    ///         .map("de_dust2")
+    ///         .empty(true)
+    ///     .end()      // Ends the NAND special filter
+    ///     .gametype(&vec!["friendlyfire", "alltalk"]);
+    /// ```
+    ///
+    /// Using the NOR filter:
+    /// ```
+    /// use msq::Filter;
+    /// let filter = Filter::new()
+    ///     .appid(240)
+    ///     .nor()      // Exclude servers that has de_dust2 OR is empty
+    ///         .map("de_dust2")
+    ///         .empty(true)
+    ///     .end()      // Ends the NOR special filter
+    ///     .gametype(&vec!["friendlyfire", "alltalk"]);
+    /// ```
     pub fn end(mut self) -> Filter {
-        self.filter_lst.push(FilterProp::new(&self.special_name, FilterPropVal::from_special(&self.spec_vec)));
+        self.filter_lst.push(FilterProp::new(
+            &self.special_name,
+            FilterPropVal::from_special(&self.spec_vec),
+        ));
         self.in_special = false;
         self.special_name = String::from("");
         self
@@ -265,6 +309,8 @@ impl Filter {
     ///     .appid(240)
     ///     .gametype(&vec!["friendlyfire", "alltalk"]);
     /// ```
+    ///
+    /// If you put in an empty vector, it will return nothing
     pub fn gametype(self, tags: &Vec<&str>) -> Filter {
         self.vecstr("gametype", tags)
     }
