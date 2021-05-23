@@ -12,8 +12,14 @@ Add this to your `Cargo.toml`:
 [dependencies]
 msq = "0.1"
 ```
+If you want to get straight from the latest master branch:
+```
+[dependencies]
+msq = { git = "https://github.com/mtcw99/msq-rs.git" }
+```
+
 To get started using msq, see the Quick Start section below
-and take a look at the [documentation](https://docs.rs/msq/).
+and take a look at the [documentation (stable)](https://docs.rs/msq/).
 
 ## Quick Start
 ```rust
