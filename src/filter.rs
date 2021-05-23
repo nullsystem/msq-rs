@@ -91,9 +91,25 @@ impl FilterProp {
     }
 }
 
-/// Filter builder
+/// Filter builder - Construct your filter to filter out server results
+///
+/// NOTE: Some filters may or may not work as expected depending on
+/// appid/games you try it on. The filter builder methods and string
+/// construction generally follows close to the reference listed out
+/// in the Valve developer wiki.
 ///
 /// Reference: <https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol#Filter>
+///
+/// # Quick Start
+///
+/// ```
+/// use msq::Filter;
+/// let filter = Filter::new()
+///     .appid(240)
+///     .full(false)
+///     .map("de_dust2");
+/// ```
+///
 pub struct Filter {
     filter_lst: Vec<FilterProp>,
     in_special: bool,

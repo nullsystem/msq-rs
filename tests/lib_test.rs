@@ -1,4 +1,4 @@
-use msq::{Filter, MSQClient, Region};
+use msq::{MSQClient, Filter, Region};
 use std::io::Result;
 
 #[tokio::main]
@@ -67,3 +67,4 @@ async fn test_lib_css_no_query() -> Result<()> {
     assert_eq!(servers.len(), 0);
     Ok(())
 }
+
