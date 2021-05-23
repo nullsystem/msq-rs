@@ -10,7 +10,7 @@ Rust library implementation of the legacy [Master Server Query Protocol](https:/
 Add this to your `Cargo.toml`:
 ```
 [dependencies]
-msq = "0.1.2"
+msq = "0.1"
 ```
 To get started using msq, see the Quick Start section below
 and take a look at the [documentation](https://docs.rs/msq/).
