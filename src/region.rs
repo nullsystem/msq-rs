@@ -1,4 +1,5 @@
 /// Region enum to restrict the servers region the query searches for
+///
 pub enum Region {
     USEast,
     USWest,
