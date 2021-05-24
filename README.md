@@ -10,7 +10,7 @@ Rust library implementation of the legacy [Master Server Query Protocol](https:/
 Add this to your `Cargo.toml`:
 ```
 [dependencies]
-msq = "0.1"
+msq = "0.2"
 ```
 If you want to get straight from the latest master branch:
 ```
@@ -28,12 +28,12 @@ However, if you want to only include one or the other, you could do the followin
 For non-async/`MSQClientBlock` only:
 ```
 [dependencies]
-msq = { version = "0.1", default-features = false, features = ["non-async"] }
+msq = { version = "0.2", default-features = false, features = ["non-async"] }
 ```
 For async/`MSQClient` only:
 ```
 [dependencies]
-msq = { version = "0.1", default-features = false, features = ["async"] }
+msq = { version = "0.2", default-features = false, features = ["async"] }
 ```
 
 ## Quick Start
@@ -96,6 +96,16 @@ fn main() -> Result<()> {
     Ok(())
 }
 ```
+
+## API Changes
+### From v0.1.X to v0.2.X
+* REMOVED: `msq::region` and `msq::filter` modules are no longer exposed. Just use
+`msq::Region` enum and `msq::Filter` struct directly.
+* REPLACED: `as_string` replaces `as_str` in `msq::Filter`
+* NEW: `single_query` method in `msq::MSQClient` and `msq::MSQClientBlock` to do a
+single query in one function
+* NEW: `msq::MSQClientBlock` for a non-async version
+* NEW: Can now define features `async` and `non-async`. Both are enabled by default.
 
 ## License
 msq-rs is released under the [MIT License](LICENSE)

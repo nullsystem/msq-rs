@@ -4,7 +4,7 @@
 //! Add this to your `Cargo.toml`:
 //! ```toml
 //! [dependencies]
-//! msq = "0.1"
+//! msq = "0.2"
 //! ```
 //! If you want to get straight from the latest master branch:
 //! ```toml
@@ -21,12 +21,12 @@
 //! * For async/[`MSQClient`] **only**:
 //! ```toml
 //! [dependencies]
-//! msq = { version = "0.1", default-features = false, features = ["async"] }
+//! msq = { version = "0.2", default-features = false, features = ["async"] }
 //! ```
 //! * For non-async/[`MSQClientBlock`] **only**:
 //! ```toml
 //! [dependencies]
-//! msq = { version = "0.1", default-features = false, features = ["non-async"] }
+//! msq = { version = "0.2", default-features = false, features = ["non-async"] }
 //! ```
 //! 
 //! # Quick Start

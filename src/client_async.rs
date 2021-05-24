@@ -97,6 +97,12 @@ impl MSQClient {
 
     /// Do a single query in one function
     ///
+    /// # Arguments
+    /// * `master_server` - The address of the master server to fetch the query from
+    /// * `max_servers` - The maximum amount of servers to query
+    /// * `region` - [`Region`] enum (`Region::USEast` - `Region::Africa` / `Region::All`)
+    /// * `filter` - [`Filter`] builder (EX: `Filter::new().appid(240).map("de_dust2")`)
+    ///
     /// # Example
     /// ```
     /// use msq::{MSQClient, Region, Filter};
