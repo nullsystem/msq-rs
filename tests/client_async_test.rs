@@ -1,6 +1,9 @@
+#[cfg(feature = "async")]
 use msq::{MSQClient, Filter, Region};
+#[cfg(feature = "async")]
 use std::io::Result;
 
+#[cfg(feature = "async")]
 #[tokio::main]
 #[test]
 async fn test_lib_nt() -> Result<()> {
@@ -18,6 +21,7 @@ async fn test_lib_nt() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "async")]
 #[tokio::main]
 #[test]
 async fn test_lib_css() -> Result<()> {
@@ -45,6 +49,7 @@ async fn test_lib_css() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "async")]
 #[tokio::main]
 #[test]
 async fn test_lib_css_big_query() -> Result<()> {
@@ -57,6 +62,7 @@ async fn test_lib_css_big_query() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "async")]
 #[tokio::main]
 #[test]
 async fn test_lib_css_no_query() -> Result<()> {
