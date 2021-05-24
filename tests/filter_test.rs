@@ -66,3 +66,19 @@ fn test_filter_empty_gametype_list() {
         "\\appid\\240\\nand\\1\\map\\de_dust2"
     );
 }
+
+#[test]
+fn test_filter_gametype2() {
+    let filter = Filter::new()
+        .appid(440)
+        .gametype(&vec!["cp"])
+        .nor()
+            .gametype(&vec!["alltalk"])
+        .end();
+
+    assert_eq!(
+        filter.as_string(),
+        "\\appid\\440\\gametype\\cp\\nor\\1\\gametype\\alltalk"
+    );
+}
+
