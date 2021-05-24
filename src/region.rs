@@ -1,3 +1,5 @@
+use std::io::{Result, Error, ErrorKind};
+
 /// Region enum to restrict the servers region the query searches for
 ///
 /// * Intended to be used with: [`MSQClient`](crate::MSQClient) and
@@ -16,6 +18,7 @@
 /// | `Region::Africa`       | Africa            | 0x07 |
 /// | `Region::All`          | Rest of the world | 0xFF |
 ///
+#[derive(Debug, PartialEq)]
 pub enum Region {
     USEast,
     USWest,
@@ -52,6 +55,21 @@ impl Region {
             Self::MiddleEast => 0x06,
             Self::Africa => 0x07,
             Self::All => 0xFF,
+        }
+    }
+
+    pub fn from_u8(code: u8) -> Result<Self> {
+        match code {
+            0x00 => Ok(Self::USEast),
+            0x01 => Ok(Self::USWest),
+            0x02 => Ok(Self::SouthAmerica),
+            0x03 => Ok(Self::Europe),
+            0x04 => Ok(Self::Asia),
+            0x05 => Ok(Self::Australia),
+            0x06 => Ok(Self::MiddleEast),
+            0x07 => Ok(Self::Africa),
+            0xFF => Ok(Self::All),
+            _ => Err(Error::new(ErrorKind::Other, "Invalid code")),
         }
     }
 }
