@@ -21,6 +21,20 @@ msq = { git = "https://github.com/mtcw99/msq-rs.git" }
 To get started using msq, see the Quick Start section below
 and take a look at the [documentation (stable)](https://docs.rs/msq/).
 
+### Features
+By default, both async `MSQClient` and non-async/blocking `MSQClientBlock` are included.
+However if you want to only include one or the other, you could do the following
+for non-async only:
+```
+[dependencies]
+msq = { version = "0.1", default-features = false, features = ["non-async"] }
+```
+For async only:
+```
+[dependencies]
+msq = { version = "0.1", default-features = false, features = ["async"] }
+```
+
 ## Quick Start
 ```rust
 use msq::{MSQClient, Region, Filter};
