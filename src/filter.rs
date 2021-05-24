@@ -1,6 +1,6 @@
 //! Filter builder - Construct your filter to filter out server results
 //!
-//! NOTE: Some filters may or may not work as expected depending on
+//! **NOTE**: Some filters may or may not work as expected depending on
 //! appid/games you try it on. The filter builder methods and string
 //! construction generally follows close to the reference listed out
 //! in the Valve developer wiki.
@@ -93,21 +93,25 @@ impl FilterProp {
 
 /// Filter builder - Construct your filter to filter out server results
 ///
-/// NOTE: Some filters may or may not work as expected depending on
+/// * Intended to be used with: [`MSQClient`](crate::MSQClient) and
+/// [`MSQClientBlock`](crate::MSQClientBlock)
+/// * **NOTE**: Some filters may or may not work as expected depending on
 /// appid/games you try it on. The filter builder methods and string
 /// construction generally follows close to the reference listed out
 /// in the Valve developer wiki.
-///
-/// Reference: <https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol#Filter>
+/// * Reference: <https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol#Filter>
 ///
 /// # Quick Start
-///
-/// ```
+/// ```rust
 /// use msq::Filter;
-/// let filter = Filter::new()
-///     .appid(240)
-///     .full(false)
-///     .map("de_dust2");
+///
+/// let filter = Filter::new()      // Create a Filter builder
+///         .appid(240)             // appid of 240 (CS:S)
+///         .nand()                 // Start of NAND special filter
+///             .map("de_dust2")        // Map is de_dust2
+///             .empty(true)            // Server is empty
+///         .end()                  // End of NAND special filter
+///         .gametype(&vec!["friendlyfire", "alltalk"]);
 /// ```
 ///
 pub struct Filter {
@@ -119,7 +123,7 @@ pub struct Filter {
 
 impl Filter {
     /// Returns a string representing the filters
-    #[deprecated(since = "0.1.2", note = "Replaced with as_string (name change)")]
+    #[deprecated(since = "0.2.0", note = "Replaced with as_string (name change)")]
     pub fn as_str(&self) -> String {
         self.as_string()
     }
@@ -196,14 +200,14 @@ impl Filter {
         self
     }
 
-    /// A special filter, specifies that servers matching any of the following \[x\] conditions should not be returned
-    /// See [pub fn end] method to see examples on usage
+    /// A special filter, specifies that servers matching any of the following \[x\] conditions should not be returned.
+    /// See [`end`](#method.end) method to see examples on usage.
     pub fn nor(self) -> Filter {
         self.special_start("nor")
     }
 
-    /// A special filter, specifies that servers matching all of the following \[x\] conditions should not be returned
-    /// See [pub fn end] method to see examples on usage
+    /// A special filter, specifies that servers matching all of the following \[x\] conditions should not be returned.
+    /// See [`end`](#method.end) method to see examples on usage.
     pub fn nand(self) -> Filter {
         self.special_start("nand")
     }
@@ -248,58 +252,87 @@ impl Filter {
     /// Filters if the servers running dedicated
     ///
     /// # Arguments
-    /// * `is_dedicated` - A bool
+    /// * `is_dedicated` - `true` = dedicated, `false` = not dedicated
     pub fn dedicated(self, is_dedicated: bool) -> Filter {
         self.boolean("dedicated", is_dedicated)
     }
 
     /// Servers using anti-cheat technology (VAC, but potentially others as well)
+    ///
+    /// # Arguments
+    /// * `hasac` - `true` = secure, `false` = not secure
     pub fn secure(self, hasac: bool) -> Filter {
         self.boolean("secure", hasac)
     }
 
     /// Servers running the specified modification (ex: cstrike)
+    ///
+    /// # Arguments
+    /// * `modg` - The modification name (ex: `cstrike`)
     pub fn gamedir(self, modg: &str) -> Filter {
         self.string("gamedir", modg)
     }
 
     /// Servers running the specified map (ex: cs_italy)
+    ///
+    /// # Arguments
+    /// * `mapn` - The current map it's playing (ex: `cs_italy`)
     pub fn map(self, mapn: &str) -> Filter {
         self.string("map", mapn)
     }
 
     /// Servers running on a Linux platform
+    ///
+    /// # Arguments
+    /// * `runslinux` - `true` = Runs on Linux, `false` = Does not runs on Linux
     pub fn linux(self, runslinux: bool) -> Filter {
         self.boolean("linux", runslinux)
     }
 
-    /// Servers that are not password protected
+    /// Servers that are password protected
+    ///
+    /// # Arguments
+    /// * `protected` - `true` = Password protected, `false` = Not password protected
     pub fn password(self, protected: bool) -> Filter {
         self.boolean("password", protected)
     }
 
     /// Servers that are full
+    ///
+    /// # Arguments
+    /// * `is_full` - `true` = Server's full, `false` = Server's not full
     pub fn full(self, is_full: bool) -> Filter {
         self.boolean("full", !is_full)
     }
 
     /// Servers that are spectator proxies
+    ///
+    /// # Arguments
+    /// * `specprox` - `true` = A spectator proxies, `false` = Not a spectator proxies
     pub fn proxy(self, specprox: bool) -> Filter {
         self.boolean("proxy", specprox)
     }
 
     /// Servers that are running game \[appid\]
+    ///
+    /// # Arguments
+    /// * `appid` - The appid of the server: (EX: `240` (for CS:S))
     pub fn appid(self, appid: u32) -> Filter {
         self.uint32("appid", appid)
     }
 
     /// Servers that are NOT running game \[appid\]
+    ///
+    /// # Arguments
+    /// * `appid` - The appid of the server: (EX: `240` (for CS:S))
     pub fn napp(self, appid: u32) -> Filter {
         self.uint32("napp", appid)
     }
 
-    /// Servers that are empty: is_empty = true
-    /// Servers that are not empty: is_empty = false
+    /// Servers that are empty
+    ///
+    /// # Arguments
+    /// * `is_empty` - `true` = Empty, `false` = Not empty
     pub fn empty(self, is_empty: bool) -> Filter {
         if is_empty {
             self.boolean("noplayers", true)
@@ -309,6 +342,9 @@ impl Filter {
     }
 
     /// Servers that are whitelisted
+    ///
+    /// # Arguments
+    /// * `white` - `true` = Whitelisted, `false` = Not whitelisted
     pub fn whitelisted(self, white: bool) -> Filter {
         self.boolean("white", white)
     }
@@ -332,6 +368,7 @@ impl Filter {
     }
 
     /// Servers with all of the given tag(s) in their 'hidden' tags (L4D2)
+    ///
     /// # Arguments
     /// * `tags` - A vector of strings which represents a tag from sv_tags
     pub fn gamedata(self, tags: &Vec<&str>) -> Filter {
@@ -339,6 +376,7 @@ impl Filter {
     }
 
     /// Servers with any of the given tag(s) in their 'hidden' tags (L4D2)
+    ///
     /// # Arguments
     /// * `tags` - A vector of strings which represents a tag from sv_tags
     pub fn gamedataor(self, tags: &Vec<&str>) -> Filter {
@@ -346,21 +384,33 @@ impl Filter {
     }
 
     /// Servers with their hostname matching \[hostname\] (can use * as a wildcard)
+    ///
+    /// # Arguments
+    /// * `hostname` - String of matching hostname (EX: `1.2.*`)
     pub fn name_match(self, hostname: &str) -> Filter {
         self.string("name_match", hostname)
     }
 
     /// Servers running version \[version\] (can use * as a wildcard)
+    ///
+    /// # Arguments
+    /// * `ver` - String of matching version
     pub fn version_match(self, ver: &str) -> Filter {
         self.string("version_match", ver)
     }
 
     /// Return only one server for each unique IP address matched
+    ///
+    /// # Arguments
+    /// * `one_server` - `true` = Return one server
     pub fn collapse_addr_hash(self, one_server: bool) -> Filter {
         self.boolean("collapse_addr_hash", one_server)
     }
 
     /// Return only servers on the specified IP address (port supported and optional)
+    ///
+    /// # Arguments
+    /// * `ipaddr` - String of the IP address to match
     pub fn gameaddr(self, ipaddr: &str) -> Filter {
         self.string("gameaddr", ipaddr)
     }
