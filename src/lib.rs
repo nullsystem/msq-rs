@@ -66,11 +66,19 @@
 mod filter;
 mod region;
 mod packet_ext;
+
+#[cfg(feature = "async")]
 mod client_async;
+
+#[cfg(feature = "non-async")]
 mod client_blocking;
 
 pub use crate::filter::Filter;
 pub use crate::region::Region;
+
+#[cfg(feature = "async")]
 pub use crate::client_async::MSQClient;
+
+#[cfg(feature = "non-async")]
 pub use crate::client_blocking::MSQClientBlock;
 

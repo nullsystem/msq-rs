@@ -12,6 +12,11 @@ keywords = ["steam", "query"]
 categories = ["asynchronous", "network-programming"]
 
 [dependencies]
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1", features = ["full"], optional = true }
 byteorder = "1"
+
+[features]
+default = ["async", "non-async"]
+async = ["tokio"]
+non-async = []
 
