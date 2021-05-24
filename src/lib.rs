@@ -1,6 +1,39 @@
 //! msq is a rust library implementation of the legacy [Master Server Query Protocol](https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol).
 //!
-//! ## Quick Start
+//! # Usage
+//! Add this to your `Cargo.toml`:
+//! ```toml
+//! [dependencies]
+//! msq = "0.1"
+//! ```
+//! If you want to get straight from the latest master branch:
+//! ```toml
+//! [dependencies]
+//! msq = { git = "https://github.com/mtcw99/msq-rs.git" }
+//! ```
+//! 
+//! To get started using msq, see the [Quick Start](#quick-start) section below.
+//! 
+//! ## Features
+//! By default, both async [`MSQClient`] and non-async/blocking [`MSQClientBlock`] are included.
+//! However, if you want to include either only async or only non-async, you could do the following:
+//! 
+//! * For async/[`MSQClient`] **only**:
+//! ```toml
+//! [dependencies]
+//! msq = { version = "0.1", default-features = false, features = ["async"] }
+//! ```
+//! * For non-async/[`MSQClientBlock`] **only**:
+//! ```toml
+//! [dependencies]
+//! msq = { version = "0.1", default-features = false, features = ["non-async"] }
+//! ```
+//! 
+//! # Quick Start
+//! The following example covers the primary functionalities of this library
+//! and should be quick on understanding how to use the library.
+//!
+//! ## Async version
 //! ```rust
 //! use msq::{MSQClient, Region, Filter};
 //! use std::io::Result;
@@ -25,7 +58,6 @@
 //!                     .empty(true)         // Server is empty
 //!                 .end()          // End of NAND special filter
 //!                 .gametype(&vec!["friendlyfire", "alltalk"])).await?;
-//!     // Gametype tags of 'friendlyfire' and 'alltalk'
 //!
 //!     // nand filter excludes servers that has de_dust2 as
 //!     // its map and is empty
@@ -37,7 +69,7 @@
 //! }
 //! ```
 //!
-//! ### Blocking version
+//! ## Blocking/Non-Async version
 //! If you don't want to use async, then a blocking version is available.
 //! The methods functionalities and names should matches its async
 //! counterpart.

@@ -23,13 +23,14 @@ and take a look at the [documentation (stable)](https://docs.rs/msq/).
 
 ### Features
 By default, both async `MSQClient` and non-async/blocking `MSQClientBlock` are included.
-However if you want to only include one or the other, you could do the following
-for non-async only:
+However, if you want to only include one or the other, you could do the following:
+
+For non-async/`MSQClientBlock` only:
 ```
 [dependencies]
 msq = { version = "0.1", default-features = false, features = ["non-async"] }
 ```
-For async only:
+For async/`MSQClient` only:
 ```
 [dependencies]
 msq = { version = "0.1", default-features = false, features = ["async"] }
@@ -60,7 +61,6 @@ async fn main() -> Result<()> {
                     .empty(true)         // Server is empty
                 .end()          // End of NAND special filter
                 .gametype(&vec!["friendlyfire", "alltalk"])).await?;
-    // Gametype tags of 'friendlyfire' and 'alltalk'
 
     // nand filter excludes servers that has de_dust2 as
     // its map and is empty
@@ -72,7 +72,7 @@ async fn main() -> Result<()> {
 }
 ```
 
-### Blocking version
+### Blocking/Non-Async version
 If you don't want to use async, then a blocking version is available. The
 methods functionalities and names should matches its async counterpart.
 ```rust

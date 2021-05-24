@@ -6,15 +6,44 @@ use crate::packet_ext::{ReadPacketExt, WritePacketExt};
 use std::io::{Cursor, Error, ErrorKind, Result};
 use tokio::net::UdpSocket;
 
-/// The primary MSQ client driver, refer to the Quick Start section
-/// on using this.
+/// The primary MSQ client driver (async)
+///
+/// * Requires feature: `async` (Turned **on** by default)
+/// * Intended to be used with [`Filter`] and [`Region`].
+/// * This uses the [`tokio`] asynchronous UDP Socket to achieve an
+/// async MSQ client driver.
+/// * The non-async/blocking version of this: [`MSQClientBlock`](crate::MSQClientBlock)
+///
+/// ## Quick Start
+/// ```rust
+/// use msq::{MSQClient, Region, Filter};
+/// use std::io::Result;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<()> {
+///     let mut client = MSQClient::new().await?;
+///     client.connect("hl2master.steampowered.com:27011").await?;
+///     client.max_servers_on_query(256);
+///
+///     let servers = client
+///         .query(Region::Europe,  // Restrict query to Europe region
+///             Filter::new()       // Create a Filter builder
+///                 .appid(240)     // appid of 240 (CS:S)
+///                 .nand()         // Start of NAND special filter
+///                     .map("de_dust2")     // Map is de_dust2
+///                     .empty(true)         // Server is empty
+///                 .end()          // End of NAND special filter
+///                 .gametype(&vec!["friendlyfire", "alltalk"])).await?;
+///     Ok(())
+/// }
+/// ```
 pub struct MSQClient {
     sock: UdpSocket,
     max_servers: usize,
 }
 
 impl MSQClient {
-    /// Create a new MSQClient variable and binds the UDP socket to 0.0.0.0:0
+    /// Create a new MSQClient variable and binds the UDP socket to `0.0.0.0:0`
     pub async fn new() -> Result<MSQClient> {
         let sock = UdpSocket::bind("0.0.0.0:0").await?;
         Ok(MSQClient {
@@ -60,8 +89,8 @@ impl MSQClient {
     /// Returns a Vec list of IP addresses in strings
     ///
     /// # Arguments
-    /// * `region` - [Region] enum (`Region::USEast` - `Region::Africa` / `Region::All`)
-    /// * `filter` - [Filter] builder (EX: `Filter::new().appid(240).map("de_dust2")`)
+    /// * `region` - [`Region`] enum (`Region::USEast` - `Region::Africa` / `Region::All`)
+    /// * `filter` - [`Filter`] builder (EX: `Filter::new().appid(240).map("de_dust2")`)
     pub async fn query(&mut self, region: Region, filter: Filter) -> Result<Vec<String>> {
         Ok(self.query_raw(region.as_u8(), &filter.as_string()).await?)
     }
