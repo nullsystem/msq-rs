@@ -1,6 +1,9 @@
+#[cfg(feature = "non-async")]
 use msq::{MSQClientBlock, Filter, Region};
+#[cfg(feature = "non-async")]
 use std::io::Result;
 
+#[cfg(feature = "non-async")]
 #[test]
 fn test_lib_noasync_nt() -> Result<()> {
     let mut client = MSQClientBlock::new()?;
@@ -17,6 +20,7 @@ fn test_lib_noasync_nt() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "non-async")]
 #[test]
 fn test_lib_noasync_css() -> Result<()> {
     let mut client = MSQClientBlock::new()?;
@@ -43,6 +47,7 @@ fn test_lib_noasync_css() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "non-async")]
 #[test]
 fn test_lib_noasync_css_big_query() -> Result<()> {
     let mut client = MSQClientBlock::new()?;
@@ -54,6 +59,7 @@ fn test_lib_noasync_css_big_query() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "non-async")]
 #[test]
 fn test_lib_noasync_css_no_query() -> Result<()> {
     let mut client = MSQClientBlock::new()?;
