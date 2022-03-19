@@ -9,7 +9,7 @@
 //! If you want to get straight from the latest master branch:
 //! ```toml
 //! [dependencies]
-//! msq = { git = "https://github.com/mtcw99/msq-rs.git" }
+//! msq = { git = "https://github.com/nullsystem/msq-rs.git" }
 //! ```
 //! 
 //! To get started using msq, see the [Quick Start](#quick-start) section below.

@@ -3,8 +3,8 @@ Rust library implementation of the legacy [Master Server Query Protocol](https:/
 
 * [Documentation](https://docs.rs/msq/)
 * [crates.io](https://crates.io/crates/msq)
-* [Repository](https://github.com/mtcw99/msq-rs)
-* [Release Notes](https://github.com/mtcw99/msq-rs/releases)
+* [Repository](https://github.com/nullsystem/msq-rs)
+* [Release Notes](https://github.com/nullsystem/msq-rs/releases)
 
 ## Usage
 Add this to your `Cargo.toml`:
@@ -15,7 +15,7 @@ msq = "0.2"
 If you want to get straight from the latest master branch:
 ```
 [dependencies]
-msq = { git = "https://github.com/mtcw99/msq-rs.git" }
+msq = { git = "https://github.com/nullsystem/msq-rs.git" }
 ```
 
 To get started using msq, see the Quick Start section below

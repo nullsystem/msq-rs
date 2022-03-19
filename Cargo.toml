@@ -2,10 +2,10 @@
 name = "msq"
 version = "0.2.0"
 license = "MIT"
-authors = ["mtcw"]
+authors = ["nullsystem"]
 edition = "2018"
 readme = "README.md"
-repository = "https://github.com/mtcw99/msq-rs"
+repository = "https://github.com/nullsystem/msq-rs"
 documentation = "https://docs.rs/msq"
 description = "Rust library implementation of the legacy Master Server Query Protocol"
 keywords = ["steam", "query"]
