@@ -108,7 +108,7 @@ single query in one function
 * NEW: Can now define features `async` and `non-async`. Both are enabled by default.
 
 ## License
-msq-rs is released under the [MIT License](LICENSE)
+msq-rs is released under the [ISC License](LICENSE)
 
 ## Dependencies
 * [tokio](https://tokio.rs/)

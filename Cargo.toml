@@ -1,9 +1,9 @@
 [package]
 name = "msq"
 version = "0.2.1"
-license = "MIT"
+license = "ISC"
 authors = ["nullsystem"]
-edition = "2018"
+edition = "2021"
 readme = "README.md"
 repository = "https://github.com/nullsystem/msq-rs"
 documentation = "https://docs.rs/msq"
