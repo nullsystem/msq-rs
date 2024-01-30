@@ -40,12 +40,14 @@ pub trait WritePacketExt: WriteBytesExt {
 impl WritePacketExt for Cursor<Vec<u8>> {
     fn write_cstring(&mut self, src: &str) -> Result<()> {
         for ch in src.chars() {
-            let mut chu8 = [0; 1];
-            ch.encode_utf8(&mut chu8);
-            self.write_u8(chu8[0])?;
+            // increase buffer size to allow encoding CJK or emoji characters
+            let mut chu8 = [0; 8];
+            let codes = ch.encode_utf8(&mut chu8);
+            for code in codes.as_bytes() {
+                self.write_u8(*code)?;
+            }
         }
         self.write_u8(0x00)?; // 0x00 Terminated
         Ok(())
     }
 }
-
